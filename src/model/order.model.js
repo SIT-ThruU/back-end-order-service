@@ -19,7 +19,8 @@ const OrderSchema = new mongoose.Schema({
         ref: 'Buyer'
     }
 },{
-    versionKey: false
+    versionKey: false,
+    toJSON: { virtuals: true }
 })
 
 OrderSchema.virtual('items', {

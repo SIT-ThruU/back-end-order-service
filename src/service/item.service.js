@@ -62,9 +62,22 @@ const createItem = async (data, orderId) => {
 
 const updateItem = async (data, itemId) => {
     try{
-        const updatedItem = await Item.findByIdAndUpdate(itemId, {
-            ...data
+        await findByItemId(itemId)
+
+        const updateField = ['name', 'type', 'description', 'estimatedPrice', 'quantity']
+
+        const filteredData = Object.keys(data)
+            .filter(key => updateField.includes(key))
+            .reduce((obj, key) => {
+            obj[key] = data[key]
+            return obj
+            },{})
+
+        await Item.updateOne({_id: itemId}, {
+            ...filteredData
         })
+
+        const updatedItem = await findByItemId(itemId)
 
         return updatedItem
     }catch(error){

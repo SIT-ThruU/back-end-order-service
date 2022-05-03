@@ -3,30 +3,30 @@ const validator = require('validator')
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
-const Buyer = mongoose.model('buyer',{
+const BuyerSchema = new mongoose.Schema({
     cid:{
         type: String,
-        require: true,
+        required: true,
         minLength: 13,
         maxLength: 13
     },
     title:{
         type: String,
-        require: true
+        required: true
     },
     fname:{
         type: String,
-        require: true,
+        required: true,
         trim: true
     },
     lname:{
         type: String,
-        require: true,
+        required: true,
         trim: true
     },
     email:{
         type: String,
-        require: true,
+        required: true,
         trim: true,
         lowercase: true,
         validate(value){
@@ -37,7 +37,7 @@ const Buyer = mongoose.model('buyer',{
     },
     password:{
         type: String,
-        require: true,
+        required: true,
         trim: true,
         minLength: 6,
         maxLength: 15,
@@ -49,7 +49,7 @@ const Buyer = mongoose.model('buyer',{
     },
     dob:{
         type: Date,
-        require: true,
+        required: true,
         validate(value){
             const today = new Date()
             const age = today.getFullYear() - value.getFullYear()
@@ -66,13 +66,17 @@ const Buyer = mongoose.model('buyer',{
     },
     telNumber:{
         type: String,
-        require: true,
+        required: true,
         validate(value){
             if(!validator.isMobilePhone(value,'th-TH')){
                 throw new BadRequestException('Phone number is invalid.')
             }
         }
     },
+},{
+    versionKey: false
 })
+
+const Buyer = mongoose.model('Buyer', BuyerSchema)
 
 module.exports = Buyer

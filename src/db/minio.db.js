@@ -1,6 +1,6 @@
-var Minio = require('minio')
+const Minio = require('minio')
 
-var minioClient = new Minio.Client({
+const minioClient = new Minio.Client({
     endPoint: process.env.MINIO_URL,
     port: parseInt(process.env.MINIO_PORT),
     useSSL: false,

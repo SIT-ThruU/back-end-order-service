@@ -5,7 +5,7 @@ const BadRequestException = require('../exception/BadRequest.exception.js')
 const Item = require('../model/item.model.js')
 const { findByItemId } = require('../service/item.service.js')
 
-const bucket = process.env.MINIO_BUCKET_ORDER_IMAGE
+const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
 
 const uploadImage = async (file, itemId) => {
     try{

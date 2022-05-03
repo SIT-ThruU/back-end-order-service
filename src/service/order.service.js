@@ -20,7 +20,7 @@ const getAllOrderByBuyerId = async (buyerId) => {
 const getOrderById = async (orderId) => {
     try{
 
-        const order = await Order.findById(orderId)
+        const order = await Order.findById(orderId).populate('items')
 
         if(!order){
             throw new NotFoundException(`Order id: ${orderId} not found.`)
@@ -50,8 +50,34 @@ const createOrder = async (data) => {
     }
 }
 
+const updateOrder = async (data, orderId) => {
+    try{
+        await getOrderById(orderId)
+
+        const updateField = ['status', 'latitude', 'longitude']
+
+        const filteredData = Object.keys(data)
+            .filter(key => updateField.includes(key))
+            .reduce((obj, key) => {
+            obj[key] = data[key]
+            return obj
+            },{})
+
+        await Order.updateOne({_id: orderId},{
+            ...filteredData
+        })
+
+        const updatedOrder = await Order.findById(orderId)
+
+        return updatedOrder
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     getAllOrderByBuyerId,
     getOrderById,
-    createOrder
+    createOrder,
+    updateOrder
 }

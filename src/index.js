@@ -4,6 +4,7 @@ const cors = require('cors')
 const OrderRouter = require('./router/order.router.js')
 const ItemRouter = require('./router/item.router.js')
 const ItemImageRouter = require('./router/itemImage.router.js')
+const BuyerRouter = require('./router/buyer.router.js')
 
 const app = express()
 
@@ -19,6 +20,7 @@ app.use(cors({
 app.use('/order', OrderRouter)
 app.use('/item', ItemRouter)
 app.use('/item/image', ItemImageRouter)
+app.use('/buyer', BuyerRouter)
 
 app.get('/health', (req, res) => {
     res.send({

@@ -1,5 +1,9 @@
 const mongoose = require('../db/mongoose.db.js')
 
+const minioClient = require('../db/minio.db.js')
+
+const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
+
 const ItemSchema = new mongoose.Schema({
     name:{
         type: String,
@@ -30,6 +34,20 @@ const ItemSchema = new mongoose.Schema({
     }
 },{
     versionKey: false
+})
+
+ItemSchema.pre('remove', async function (next){
+    try{
+        const item = this
+
+        for (let i=0;i<item.referencePicture.length;i++) {
+            await minioClient.removeObject(bucket, item.referencePicture[i])
+        }
+
+        next()
+    }catch(error){
+        throw error
+    }
 })
 
 const Item = mongoose.model('Item', ItemSchema)

@@ -1,11 +1,14 @@
 const mongoose = require('../db/mongoose.db.js')
+
 const validator = require('validator')
+const bcrypt = require('bcryptjs')
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
 const BuyerSchema = new mongoose.Schema({
     cid:{
         type: String,
+        unique: true,
         required: true,
         minLength: 13,
         maxLength: 13
@@ -26,6 +29,7 @@ const BuyerSchema = new mongoose.Schema({
     },
     email:{
         type: String,
+        unique: true,
         required: true,
         trim: true,
         lowercase: true,
@@ -73,9 +77,64 @@ const BuyerSchema = new mongoose.Schema({
             }
         }
     },
+    tokens:{
+        type: [String]
+    }
 },{
     versionKey: false
 })
+
+BuyerSchema.virtual('orders', {
+    ref: 'Order',
+    localField: '_id',
+    foreignField: 'buyerId'
+})
+
+
+BuyerSchema.methods.toJSON = function (){
+    const buyer = this
+    const buyerObject = buyer.toObject()
+
+    delete buyerObject.password
+
+    delete buyerObject.tokens
+
+    return buyerObject
+}
+
+BuyerSchema.pre('save', async function (next){
+    try{
+        const buyer = this
+
+        if(buyer.isModified('password')){
+            buyer.password = await bcrypt.hash(buyer.password, 8)
+        }
+    
+        next()
+    }catch(error){
+        throw error
+    }
+})
+
+BuyerSchema.statics.findByCredentials = async (email, password) => {
+    try{
+        const buyer = await  Buyer.findOne({ email })
+
+        if(!buyer){
+            throw new BadRequestException('The email or password is incorrect')
+        }
+
+        const isMatch = await bcrypt.compare(password, buyer.password)
+
+        if(!isMatch){
+            throw new BadRequestException('The email or password is incorrect')
+        }
+
+        return buyer
+    }catch(error){
+        throw error
+    }
+}
 
 const Buyer = mongoose.model('Buyer', BuyerSchema)
 

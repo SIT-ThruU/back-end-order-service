@@ -1,10 +1,11 @@
+const express = require('express')
+const router = new express.Router()
+
 const BadRequestException = require('../exception/BadRequest.exception')
 const NotFoundException = require('../exception/NotFound.exception')
 
 const { uploadImage, getImage, deleteImage } = require('../service/itemImage.service.js')
-
-const express = require('express')
-const router = new express.Router()
+const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
 
 const multer  = require('multer')
 const upload = multer({
@@ -16,13 +17,13 @@ const upload = multer({
     }
 })
 
-router.post('/upload/:itemId', upload.single('image'), async (req, res, next) => {
+router.post('/upload/:itemId', verifyAuthAT, upload.single('image'), async (req, res, next) => {
     try{
         if(!req.file){
             throw new NotFoundException('Please upload image.')
         }
 
-        const imageName = await uploadImage(req.file, req.params.itemId)
+        const imageName = await uploadImage(req.file, req.params.itemId, req.buyer._id)
 
         res.status(201).send({ 
             data:{
@@ -55,13 +56,13 @@ router.get('/get/:imageName', async (req, res, next) => {
     }
 })
 
-router.delete('/delete/:imageName', async (req, res, next) => {
+router.delete('/delete/:imageName', verifyAuthAT, async (req, res, next) => {
     try{
         if(!req.params.imageName){
             throw new BadRequestException('required imageName params.')
         }
 
-        await deleteImage(req.params.imageName)
+        await deleteImage(req.params.imageName, req.buyer._id)
 
         res.send({
             data:{

@@ -2,10 +2,11 @@ const express = require('express')
 const router = new express.Router()
 
 const { findAllByOrderId, findByItemId, createItem, updateItem, deleteItem } = require('../service/item.service')
+const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
 
-router.get('/getall', async (req, res, next) => {
+router.get('/getall', verifyAuthAT, async (req, res, next) => {
     try{
-        const items = await findAllByOrderId(req.body.orderId)
+        const items = await findAllByOrderId(req.body.orderId, req.buyer._id)
 
         res.send({ 
             data:{
@@ -17,9 +18,9 @@ router.get('/getall', async (req, res, next) => {
     }
 })
 
-router.get('/get/:itemId', async (req, res, next) => {
+router.get('/get/:itemId', verifyAuthAT, async (req, res, next) => {
     try{
-        const item = await findByItemId(req.params.itemId)
+        const item = await findByItemId(req.params.itemId, req.buyer._id)
 
         res.send({ 
             data:{
@@ -31,9 +32,9 @@ router.get('/get/:itemId', async (req, res, next) => {
     }
 })
 
-router.post('/create', async (req, res, next) => {
+router.post('/create', verifyAuthAT, async (req, res, next) => {
     try{
-        const item = await createItem(req.body,req.body.orderId)
+        const item = await createItem(req.body,req.body.orderId, req.buyer._id)
         res.status(201).send({
             data:{
                 item,
@@ -45,9 +46,9 @@ router.post('/create', async (req, res, next) => {
     }
 })
 
-router.put('/update/:itemId', async (req, res, next) =>{
+router.put('/update/:itemId', verifyAuthAT, async (req, res, next) =>{
     try{
-        const updatedItem = await updateItem(req.body, req.params.itemId)
+        const updatedItem = await updateItem(req.body, req.params.itemId, req.buyer._id)
 
         res.send({
             data:{
@@ -60,9 +61,9 @@ router.put('/update/:itemId', async (req, res, next) =>{
     }
 })
 
-router.delete('/delete/:itemId', async (req, res, next) => {
+router.delete('/delete/:itemId', verifyAuthAT, async (req, res, next) => {
     try{
-        const deletedItem = await deleteItem(req.params.itemId)
+        const deletedItem = await deleteItem(req.params.itemId, req.buyer._id)
 
         res.send({
             data:{

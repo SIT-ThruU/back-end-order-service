@@ -2,10 +2,11 @@ const express = require('express')
 const router = new express.Router()
 
 const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder } = require('../service/order.service.js')
+const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
 
-router.get('/getall', async (req, res, next) => {
+router.get('/getall', verifyAuthAT, async (req, res, next) => {
     try{
-        const orders = await getAllOrderByBuyerId(req.body.buyerId)
+        const orders = await getAllOrderByBuyerId(req.buyer._id)
 
         res.send({
             data:{
@@ -17,9 +18,9 @@ router.get('/getall', async (req, res, next) => {
     }
 })
 
-router.get('/get/:orderId', async (req, res, next) => {
+router.get('/get/:orderId', verifyAuthAT, async (req, res, next) => {
     try{
-        const order = await getOrderById(req.params.orderId)
+        const order = await getOrderById(req.params.orderId, req.buyer._id)
 
         res.send({
             data:{
@@ -31,9 +32,9 @@ router.get('/get/:orderId', async (req, res, next) => {
     }
 })
 
-router.post('/create', async (req, res, next) => {
+router.post('/create', verifyAuthAT, async (req, res, next) => {
     try{
-        const order = await createOrder(req.body)
+        const order = await createOrder(req.body, req.buyer._id)
 
         res.status(201).send({
             data:{
@@ -46,9 +47,9 @@ router.post('/create', async (req, res, next) => {
     }
 })
 
-router.put('/edit/:orderId', async (req, res, next) => {
+router.put('/edit/:orderId', verifyAuthAT, async (req, res, next) => {
     try{
-        const updatedOrder = await updateOrder(req.body, req.params.orderId)
+        const updatedOrder = await updateOrder(req.body, req.params.orderId, req.buyer._id)
 
         res.send({
             data:{

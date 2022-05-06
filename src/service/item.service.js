@@ -1,12 +1,14 @@
 const BadRequestException = require('../exception/BadRequest.exception')
 const NotFoundException = require('../exception/NotFound.exception')
+
 const Item = require('../model/item.model')
+const Buyer = require('../model/buyer.model')
 
 const { getOrderById } = require('../service/order.service')
 
-const findAllByOrderId = async (orderId) => {
+const findAllByOrderId = async (orderId, buyerId) => {
     try{
-        const order = await getOrderById(orderId)
+        const order = await getOrderById(orderId, buyerId)
 
         const items = await Item.find({
             orderId: order._id
@@ -18,11 +20,19 @@ const findAllByOrderId = async (orderId) => {
     }
 }
 
-const findByItemId = async (itemId) => {
+const findByItemId = async (itemId, buyerId) => {
     try{
         const item = await Item.findById(itemId)
 
         if(!item){
+            throw new NotFoundException(`Item id: ${itemId} not found.`)
+        }
+
+        const buyer = await Buyer.findOne({_id: buyerId}).populate('orders')
+
+        const hasFound = buyer.orders.some(order => order._id.toString() === item.orderId.toString())
+        
+        if(!hasFound){
             throw new NotFoundException(`Item id: ${itemId} not found.`)
         }
 
@@ -32,7 +42,7 @@ const findByItemId = async (itemId) => {
     }
 }
 
-const createItem = async (data, orderId) => {
+const createItem = async (data, orderId, buyerId) => {
     try{
         const requireField = ['name', 'type', 'description', 'quantity', 'orderId']
         const hasNull = []
@@ -47,7 +57,7 @@ const createItem = async (data, orderId) => {
             throw new BadRequestException(`${hasNull.toString()} are required.`)
         }
 
-        const order = await getOrderById(orderId)
+        const order = await getOrderById(orderId, buyerId)
 
         const item = await Item.create({
             ...data,
@@ -60,9 +70,9 @@ const createItem = async (data, orderId) => {
     }
 }
 
-const updateItem = async (data, itemId) => {
+const updateItem = async (data, itemId, buyerId) => {
     try{
-        await findByItemId(itemId)
+        await findByItemId(itemId, buyerId)
 
         const updateField = ['name', 'type', 'description', 'estimatedPrice', 'quantity']
 
@@ -73,11 +83,11 @@ const updateItem = async (data, itemId) => {
             return obj
             },{})
 
-        await Item.updateOne({_id: itemId}, {
+        const updatedItem = await Item.findByIdAndUpdate(itemId, {
             ...filteredData
+        },{
+            new: true
         })
-
-        const updatedItem = await findByItemId(itemId)
 
         return updatedItem
     }catch(error){
@@ -85,9 +95,11 @@ const updateItem = async (data, itemId) => {
     }
 }
 
-const deleteItem = async (itemId) => {
+const deleteItem = async (itemId, buyerId) => {
     try{
-        const deletedItem = await Item.findByIdAndDelete(itemId)
+        const deletedItem = await findByItemId(itemId, buyerId)
+
+        await deletedItem.remove()
 
         return deletedItem
     }catch(error){

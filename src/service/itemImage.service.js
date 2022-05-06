@@ -3,13 +3,14 @@ const minioClient = require('../db/minio.db.js')
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
 const Item = require('../model/item.model.js')
+
 const { findByItemId } = require('../service/item.service.js')
 
 const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
 
-const uploadImage = async (file, itemId) => {
+const uploadImage = async (file, itemId, buyerId) => {
     try{
-        const item = await findByItemId(itemId)
+        const item = await findByItemId(itemId, buyerId)
 
         if(!item.referencePicture.includes(`${itemId}-${file.originalname}`)){
 
@@ -41,7 +42,7 @@ const getImage = async (imageName) => {
     }
 }
 
-const deleteImage = async (imageName) => {
+const deleteImage = async (imageName, buyerId) => {
     try{
         const item = await Item.findOne({
             referencePicture: imageName
@@ -50,6 +51,8 @@ const deleteImage = async (imageName) => {
         if(!item){
             throw new BadRequestException(`Item contain with ${imageName} are not found.`)
         }
+
+        await findByItemId(item._id, buyerId)
 
         item.referencePicture = item.referencePicture.filter(key => key !== imageName)
 

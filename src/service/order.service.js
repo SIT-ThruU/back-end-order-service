@@ -2,8 +2,6 @@ const NotFoundException = require('../exception/NotFound.exception.js')
 
 const Order = require('../model/order.model.js')
 
-const { findById } = require('./buyer.service.js')
-
 const getAllOrderByBuyerId = async (buyerId) => {
     try{
 
@@ -17,10 +15,12 @@ const getAllOrderByBuyerId = async (buyerId) => {
     }
 }
 
-const getOrderById = async (orderId) => {
+const getOrderById = async (orderId, buyerId) => {
     try{
-
-        const order = await Order.findById(orderId).populate('items')
+        const order = await Order.findOne({
+            _id: orderId,
+            buyerId
+        }).populate('items')
 
         if(!order){
             throw new NotFoundException(`Order id: ${orderId} not found.`)
@@ -32,16 +32,14 @@ const getOrderById = async (orderId) => {
     }
 }
 
-const createOrder = async (data) => {
+const createOrder = async (data, buyerId) => {
     try{
-        const {latitude, longitude, buyerId} = data
-
-        const buyer = await findById(buyerId)
+        const {latitude, longitude} = data
 
         const newOrder = await Order.create({
             latitude,
             longitude,
-            buyerId: buyer._id
+            buyerId
         })
 
         return newOrder
@@ -50,9 +48,9 @@ const createOrder = async (data) => {
     }
 }
 
-const updateOrder = async (data, orderId) => {
+const updateOrder = async (data, orderId, buyerId) => {
     try{
-        await getOrderById(orderId)
+        await getOrderById(orderId, buyerId)
 
         const updateField = ['status', 'latitude', 'longitude']
 
@@ -63,11 +61,11 @@ const updateOrder = async (data, orderId) => {
             return obj
             },{})
 
-        await Order.updateOne({_id: orderId},{
+        const updatedOrder =  await Order.findOneAndUpdate({_id: orderId},{
             ...filteredData
+        },{
+            new: true
         })
-
-        const updatedOrder = await Order.findById(orderId)
 
         return updatedOrder
     }catch(error){

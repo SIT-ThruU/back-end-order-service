@@ -47,6 +47,10 @@ const createItem = async (data, orderId, buyerId) => {
         const requireField = ['name', 'type', 'description', 'quantity', 'orderId']
         const hasNull = []
 
+        if(!data){
+            throw new BadRequestException(`require ${requireField.toString()} field.`)
+        }
+
         requireField.forEach(key => {
             if(!data[key]){
                 hasNull.push(key)
@@ -86,7 +90,8 @@ const updateItem = async (data, itemId, buyerId) => {
         const updatedItem = await Item.findByIdAndUpdate(itemId, {
             ...filteredData
         },{
-            new: true
+            new: true,
+            runValidators: true
         })
 
         return updatedItem

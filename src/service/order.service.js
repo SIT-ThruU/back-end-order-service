@@ -1,3 +1,4 @@
+const BadRequestException = require('../exception/BadRequest.exception.js')
 const NotFoundException = require('../exception/NotFound.exception.js')
 
 const Order = require('../model/order.model.js')
@@ -34,6 +35,15 @@ const getOrderById = async (orderId, buyerId) => {
 
 const createOrder = async (data, buyerId) => {
     try{
+        const hasOrder = await Order.findOne({
+            status: 'ON_CART',
+            buyerId: buyerId
+        })
+
+        if(hasOrder){
+            throw new BadRequestException(`Buyer id: ${buyerId} have order with ON_CART already.`)
+        }
+
         const {latitude, longitude} = data
 
         const newOrder = await Order.create({
@@ -64,7 +74,8 @@ const updateOrder = async (data, orderId, buyerId) => {
         const updatedOrder =  await Order.findOneAndUpdate({_id: orderId},{
             ...filteredData
         },{
-            new: true
+            new: true,
+            runValidators: true
         })
 
         return updatedOrder

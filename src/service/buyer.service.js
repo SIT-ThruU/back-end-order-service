@@ -22,6 +22,10 @@ const createBuyer = async (data)  => {
         const requireField = ['cid', 'title', 'fname', 'lname', 'email', 'password', 'dob', 'telNumber']
         const hasNull = []
 
+        if(!data){
+            throw new BadRequestException(`require ${requireField.toString()} field.`)
+        }
+
         requireField.forEach(key => {
             if(!data[key]){
                 hasNull.push(key)
@@ -71,7 +75,8 @@ const updateBuyer = async (data, buyerId) => {
         const updatedBuyer = await Buyer.findOneAndUpdate({_id: buyerId}, {
             ...filteredData
         },{
-            new: true
+            new: true,
+            runValidators: true
         })
 
         return updatedBuyer

@@ -1,6 +1,7 @@
 const minioClient = require('../db/minio.db.js')
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
+const NotFoundException = require('../exception/NotFound.exception.js')
 
 const Item = require('../model/item.model.js')
 
@@ -10,20 +11,30 @@ const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
 
 const uploadImage = async (file, itemId, buyerId) => {
     try{
+        if(!file){
+            throw new BadRequestException(`require file.`)
+        }
+
         const item = await findByItemId(itemId, buyerId)
 
-        if(!item.referencePicture.includes(`${itemId}-${file.originalname}`)){
+        if(!item){
+            throw new NotFoundException(`Item id: ${itemId} not found.`)
+        }
+
+        const imageName = `${itemId}-${file.originalname}`
+
+        if(!item.referencePicture.includes(imageName)){
 
             const metadata = {
                 'Content-type': file.mimetype,
             }
         
-            await minioClient.putObject(bucket, `${itemId}-${file.originalname}`, file.buffer, metadata)
+            await minioClient.putObject(bucket, imageName, file.buffer, metadata)
 
-            item.referencePicture.push(`${itemId}-${file.originalname}`)
+            item.referencePicture.push(imageName)
             await item.save()
 
-            return `${itemId}-${file.originalname}`
+            return imageName
         }else{
             throw new BadRequestException(`${file.originalname} already exist.`)
         }
@@ -38,7 +49,11 @@ const getImage = async (imageName) => {
 
         return dataStream
     }catch(error){
-        throw error
+        if(error.code === 'NoSuchKey'){
+            throw new NotFoundException(`${imageName} not found.`)
+        }else{
+            throw error
+        }
     }
 }
 

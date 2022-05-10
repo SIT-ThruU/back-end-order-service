@@ -79,6 +79,9 @@ const BuyerSchema = new mongoose.Schema({
     },
     tokens:{
         type: [String]
+    },
+    avatar:{
+        type: String
     }
 },{
     versionKey: false

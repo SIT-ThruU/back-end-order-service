@@ -1,7 +1,13 @@
+const sharp = require('sharp')
+
 const BadRequestException = require('../exception/BadRequest.exception')
 const NotFoundException = require('../exception/NotFound.exception')
 
 const Buyer = require('../model/buyer.model.js')
+
+const minioClient = require('../db/minio.db.js')
+
+const bucket = process.env.MINIO_BUCKET_AVATAR_IMAGE
 
 const findById = async (id) => {
     try{
@@ -109,10 +115,71 @@ const addToken = async (id, token) => {
     }
 }
 
+const uploadAvatar = async (file, buyerId) => {
+    try{
+        const buyer = await findById(buyerId)
+
+        if(!file){
+            throw new BadRequestException(`require file.`)
+        }
+
+        if(!buyer){
+            throw new BadRequestException(`Buyer id ${buyerId} not found.`)
+        }
+
+        if(buyer.avatar){
+            await minioClient.removeObject(bucket, buyer.avatar)
+            buyer.avatar = ''
+        }
+
+        const metadata = {
+            'Content-type': file.mimetype,
+        }
+
+        const buffer = await sharp(file.buffer).resize({width:250,height:250}).png().toBuffer()
+
+        const extArray = file.mimetype.split("/");
+        const extension = extArray[extArray.length - 1];
+        const fileName = `${buyerId.toString()}.${extension}`
+        
+        await minioClient.putObject(bucket, fileName, buffer, metadata)
+
+        await Buyer.findByIdAndUpdate(buyer._id,{
+            avatar: fileName
+        })
+
+        return fileName
+    }catch(error){
+        throw error
+    }
+}
+
+const getAvatar = async (buyerId) => {
+    try{
+        const buyer = await findById(buyerId)
+
+        if(!buyer){
+            throw new BadRequestException(`Buyer id ${buyerId} not found.`)
+        }
+
+        if(!buyer.avatar){
+            throw new BadRequestException(`Buyer avatar not found.`)
+        }
+
+        const dataStream = await minioClient.getObject(bucket, buyer.avatar)
+
+        return dataStream
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     findById,
     createBuyer,
     updateBuyer,
     verifyLogin,
-    addToken
+    addToken,
+    uploadAvatar,
+    getAvatar
 }

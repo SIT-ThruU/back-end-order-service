@@ -3,9 +3,11 @@ const router = new express.Router()
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
-const { createBuyer, verifyLogin, updateBuyer, addToken } = require('../service/buyer.service.js')
+const { createBuyer, verifyLogin, updateBuyer, addToken, uploadAvatar, getAvatar } = require('../service/buyer.service.js')
 const { generateRefreshToken, generateAccessToken, deleteRefreshToken } = require('../service/token.service.js')
 const { verifyAuthAT, verifyAuthRT } = require('../middleware/buyer.auth.middleware.js')
+
+const upload = require('../util/upload.util.js')
 
 router.get('/profile', verifyAuthAT, (req, res, next) => {
     try{
@@ -107,6 +109,32 @@ router.delete('/logout', verifyAuthRT, async (req, res, next) =>{
             data:{
                 message: 'logout successful.'
             }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.post('/uploadAvatar', verifyAuthAT, upload.single('avatar'), async (req, res, next) => {
+    try{
+        const avatar = await uploadAvatar(req.file, req.buyer._id)
+
+        res.send({ avatar })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/getAvatar', verifyAuthAT, async (req, res, next) => {
+    try{
+        const dataStream = await getAvatar(req.buyer._id)
+        
+        dataStream.on('data',(chunk) => {
+            res.write(chunk)
+        })
+
+        dataStream.on('end', () => {
+            return res.end()
         })
     }catch(error){
         next(error)

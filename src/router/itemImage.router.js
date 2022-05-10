@@ -7,15 +7,7 @@ const NotFoundException = require('../exception/NotFound.exception')
 const { uploadImage, getImage, deleteImage } = require('../service/itemImage.service.js')
 const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
 
-const multer  = require('multer')
-const upload = multer({
-    fileFilter(req, file, cb){
-        if(!file.originalname.match(/\.(png|jpeg|jpg)$/)){
-            return cb(new BadRequestException('Please upload image'))
-        }
-        cb(null,true);
-    }
-})
+const upload = require('../util/upload.util.js')
 
 router.post('/upload/:itemId', verifyAuthAT, upload.single('image'), async (req, res, next) => {
     try{

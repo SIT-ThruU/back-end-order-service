@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid')
+
 const minioClient = require('../db/minio.db.js')
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
@@ -21,7 +23,9 @@ const uploadImage = async (file, itemId, buyerId) => {
             throw new NotFoundException(`Item id: ${itemId} not found.`)
         }
 
-        const imageName = `${itemId}-${file.originalname}`
+        const extArray = file.mimetype.split("/")
+        const extension = extArray[extArray.length - 1]
+        const imageName = `${uuidv4()}.${extension}`
 
         if(!item.referencePicture.includes(imageName)){
 

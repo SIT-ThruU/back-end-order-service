@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const NotFoundException = require('../exception/NotFound.exception')
 const UnAuthorizationException = require('../exception/UnAuthorization.exception.js')
 
-const Buyer = require('../model/buyer.model')
+const Carrier = require('../model/carrier.model.js')
 
 const verifyAuthAT = async function (req, res, next){
     try{
@@ -21,13 +21,13 @@ const verifyAuthAT = async function (req, res, next){
             throw invalidTokenError
         }
     
-        const buyer = await Buyer.findById(decodedPayload.data)
+        const carrier = await Carrier.findById(decodedPayload.data)
 
-        if(!buyer){
+        if(!carrier){
             throw new NotFoundException('Invalid token.')
         }
 
-        req.buyer = buyer
+        req.carrier = carrier
         req.token = token
 
         next()
@@ -56,16 +56,16 @@ const verifyAuthRT = async function (req, res, next){
             throw invalidTokenError
         }
     
-        const buyer = await Buyer.findOne({
+        const carrier = await Carrier.findOne({
             _id: decodedPayload.data,
             tokens: token
         })
 
-        if(!buyer){
+        if(!carrier){
             throw new NotFoundException('Invalid token.')
         }
 
-        req.buyer = buyer
+        req.carrier = carrier
         req.token = token
 
         next()

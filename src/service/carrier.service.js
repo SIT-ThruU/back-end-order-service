@@ -1,11 +1,10 @@
 const sharp = require('sharp')
 const { v4: uuidv4 } = require('uuid')
 
-const BadRequestException = require('../exception/BadRequest.exception')
-const NotFoundException = require('../exception/NotFound.exception')
-const InternalExpection = require('../exception/Internal.expection')
+const Carrier = require('../model/carrier.model.js')
 
-const Buyer = require('../model/buyer.model.js')
+const NotFoundException = require('../exception/NotFound.exception')
+const BadRequestException = require('../exception/BadRequest.exception.js')
 
 const minioClient = require('../db/minio.db.js')
 
@@ -13,19 +12,19 @@ const bucket = process.env.MINIO_BUCKET_AVATAR_IMAGE
 
 const findById = async (id) => {
     try{
-        const buyer = await Buyer.findById(id)
+        const carrier = await Carrier.findById(id)
 
-        if(!buyer){
-            throw new NotFoundException(`Buyer id: ${id} not found.`)
+        if(!carrier){
+            throw new NotFoundException(`Carrier id: ${id} not found.`)
         }
 
-        return buyer
+        return carrier
     }catch(error){
         throw error
     }
 }
 
-const createBuyer = async (data)  => {
+const createCarrier = async (data) => {
     try{
         const requireField = ['cid', 'title', 'fname', 'lname', 'email', 'password', 'dob', 'telNumber']
         const hasNull = []
@@ -44,26 +43,21 @@ const createBuyer = async (data)  => {
             throw new BadRequestException(`require ${hasNull.toString()} field.`)
         }
 
-        const newBuyer = new Buyer({
+        const newCarrier = new Carrier({
             ...data
         })
 
-        await newBuyer.save()
+        await newCarrier.save()
 
-        return newBuyer
+        return newCarrier
     }catch(error){
-        if(error.name === 'MongoServerError' && error.code === 11000){
-            const existField = Object.keys(error.keyPattern)
-            throw new BadRequestException(`${existField.toString()} are already exists.`)
-        }
-
         throw error
     }
 }
 
-const updateBuyer = async (data, buyerId) => {
+const updatecarrier = async (data, carrierId) => {
     try{
-        const buyer = await findById(buyerId)
+        const carrier = await findById(carrierId)
 
         const updateField = ['title', 'fname', 'lname', 'password', 'telNumber']
 
@@ -79,19 +73,19 @@ const updateBuyer = async (data, buyerId) => {
         }
 
         if(filteredData.password){
-            buyer.password = filteredData.password
-            await buyer.save()
+            carrier.password = filteredData.password
+            await carrier.save()
             delete filteredData.password
         }
 
-        const updatedBuyer = await Buyer.findOneAndUpdate({_id: buyerId}, {
+        const updatedCarrier = await Carrier.findOneAndUpdate({_id: carrierId}, {
             ...filteredData
         },{
             new: true,
             runValidators: true
         })
 
-        return updatedBuyer
+        return updatedCarrier
     }catch(error){
         throw error
     }
@@ -99,9 +93,9 @@ const updateBuyer = async (data, buyerId) => {
 
 const verifyLogin = async (email, password) => {
     try{
-        const buyer = await Buyer.findByCredentials(email, password)
+        const carrier = await Carrier.findByCredentials(email, password)
 
-        return buyer
+        return carrier
     }catch(error){
         throw error
     }
@@ -109,33 +103,47 @@ const verifyLogin = async (email, password) => {
 
 const addToken = async (id, token) => {
     try{
-        const editedBuyer = await Buyer.findByIdAndUpdate(id,{
+        const editedCarrier = await Carrier.findByIdAndUpdate(id,{
             $push:{
                 tokens: token
             }
         })
 
-        return editedBuyer
+        return editedCarrier
     }catch(error){
         throw error
     }
 }
 
-const uploadAvatar = async (file, buyerId) => {
+const deleteToken = async (id, token) => {
     try{
-        const buyer = await findById(buyerId)
+        await Carrier.findByIdAndUpdate(id,{
+            $pull:{
+                tokens: token
+            }
+        })
+
+        return 
+    }catch(error){
+        throw error
+    }
+}
+
+const uploadAvatar = async (file, carrierId) => {
+    try{
+        const carrier = await findById(carrierId)
 
         if(!file){
             throw new BadRequestException(`require file.`)
         }
 
-        if(!buyer){
-            throw new BadRequestException(`Buyer id ${buyerId} not found.`)
+        if(!carrier){
+            throw new BadRequestException(`carrier id ${carrierId} not found.`)
         }
 
-        if(buyer.avatar){
-            await minioClient.removeObject(bucket, buyer.avatar)
-            buyer.avatar = ''
+        if(carrier.avatar){
+            await minioClient.removeObject(bucket, carrier.avatar)
+            carrier.avatar = ''
         }
 
         const metadata = {
@@ -150,7 +158,7 @@ const uploadAvatar = async (file, buyerId) => {
         
         await minioClient.putObject(bucket, fileName, buffer, metadata)
 
-        await Buyer.findByIdAndUpdate(buyer._id,{
+        await Carrier.findByIdAndUpdate(carrier._id,{
             avatar: fileName
         })
 
@@ -160,51 +168,37 @@ const uploadAvatar = async (file, buyerId) => {
     }
 }
 
-const getAvatar = async (buyerId) => {
+const getAvatar = async (carrierId) => {
     try{
-        const buyer = await findById(buyerId)
+        const carrier = await findById(carrierId)
 
-        if(!buyer){
-            throw new BadRequestException(`Buyer id ${buyerId} not found.`)
+        if(!carrier){
+            throw new BadRequestException(`carrier id ${carrierId} not found.`)
         }
 
-        if(!buyer.avatar){
-            throw new BadRequestException(`Buyer avatar not found.`)
+        if(!carrier.avatar){
+            throw new BadRequestException(`carrier avatar not found.`)
         }
 
-        const dataStream = await minioClient.getObject(bucket, buyer.avatar)
+        const dataStream = await minioClient.getObject(bucket, carrier.avatar)
 
         return dataStream
     }catch(error){
         if(error.code === 'NoSuchKey'){
-            throw new InternalExpection(`${buyerId} avatar not found.`)
+            throw new InternalExpection(`${carrierId} avatar not found.`)
         }else{
             throw error
         }
     }
 }
 
-const deleteToken = async (id, token) => {
-    try{
-        await Buyer.findByIdAndUpdate(id,{
-            $pull:{
-                tokens: token
-            }
-        })
-
-        return 
-    }catch(error){
-        throw error
-    }
-}
-
 module.exports = {
     findById,
-    createBuyer,
-    updateBuyer,
+    createCarrier,
+    updatecarrier,
     verifyLogin,
     addToken,
+    deleteToken,
     uploadAvatar,
-    getAvatar,
-    deleteToken
+    getAvatar
 }

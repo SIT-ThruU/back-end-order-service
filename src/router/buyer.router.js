@@ -3,13 +3,14 @@ const router = new express.Router()
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
-const { createBuyer, verifyLogin, updateBuyer, addToken, uploadAvatar, getAvatar } = require('../service/buyer.service.js')
-const { generateRefreshToken, generateAccessToken, deleteRefreshToken } = require('../service/token.service.js')
-const { verifyAuthAT, verifyAuthRT } = require('../middleware/buyer.auth.middleware.js')
+const { createBuyer, verifyLogin, updateBuyer, addToken, uploadAvatar, getAvatar, deleteToken } = require('../service/buyer.service.js')
+const { generateRefreshToken, generateAccessToken } = require('../service/token.service.js')
+const { verifyAuthAT: authATBuyer,
+        verifyAuthRT: authRTBuyer } = require('../middleware/buyer.auth.middleware.js')
 
 const upload = require('../util/upload.util.js')
 
-router.get('/profile', verifyAuthAT, (req, res, next) => {
+router.get('/profile', authATBuyer, (req, res, next) => {
     try{
         res.send({
             data:{
@@ -45,7 +46,7 @@ router.post('/create', async (req, res, next) => {
     }
 })
 
-router.put('/update', verifyAuthAT, async (req, res, next) => {
+router.put('/update', authATBuyer, async (req, res, next) => {
     try{
         const updatedBuyer = await updateBuyer(req.body, req.buyer._id)
 
@@ -87,7 +88,7 @@ router.post('/login', async (req, res, next) => {
     }
 })
 
-router.get('/authenticate', verifyAuthRT, async (req, res, next) => {
+router.get('/authenticate', authRTBuyer, async (req, res, next) => {
     try{
         const newAccessToken = await generateAccessToken(req.buyer._id.toString())
 
@@ -101,9 +102,9 @@ router.get('/authenticate', verifyAuthRT, async (req, res, next) => {
     }
 })
 
-router.delete('/logout', verifyAuthRT, async (req, res, next) =>{
+router.delete('/logout', authRTBuyer, async (req, res, next) =>{
     try{
-        await deleteRefreshToken(req.buyer._id, req.token)
+        await deleteToken(req.buyer._id, req.token)
 
         res.send({
             data:{
@@ -115,7 +116,7 @@ router.delete('/logout', verifyAuthRT, async (req, res, next) =>{
     }
 })
 
-router.post('/uploadAvatar', verifyAuthAT, upload.single('avatar'), async (req, res, next) => {
+router.post('/uploadAvatar', authATBuyer, upload.single('avatar'), async (req, res, next) => {
     try{
         const avatar = await uploadAvatar(req.file, req.buyer._id)
 
@@ -125,7 +126,7 @@ router.post('/uploadAvatar', verifyAuthAT, upload.single('avatar'), async (req, 
     }
 })
 
-router.get('/getAvatar', verifyAuthAT, async (req, res, next) => {
+router.get('/getAvatar', authATBuyer, async (req, res, next) => {
     try{
         const dataStream = await getAvatar(req.buyer._id)
         

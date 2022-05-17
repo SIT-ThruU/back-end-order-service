@@ -117,9 +117,10 @@ router.post('/uploadAvatar', authATCarrier, upload.single('avatar'), async (req,
     try{
         const avatar = await uploadAvatar(req.file, req.carrier._id)
 
-        res.send({
+        res.status(201).send({ 
             data:{
-                avatar
+                avatar,
+                message: `upload ${req.file.originalname} sucessful.`
             }
         })
     }catch(error){

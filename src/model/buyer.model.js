@@ -48,6 +48,8 @@ const BuyerSchema = new mongoose.Schema({
         validate(value){
             if(value.toLowerCase().includes('password')){
                 throw new BadRequestException('Password cannot contain "password".')
+            }else if(!value.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,15}$/)){
+                throw new BadRequestException('Password must be 6-15 characters and at least one uppercase letter, one lowercase letter, one number and one special character.')
             }
         }
     },

@@ -87,6 +87,10 @@ const updateItem = async (data, itemId, buyerId) => {
             return obj
             },{})
 
+        if(Object.keys(filteredData).length === 0){
+            throw new BadRequestException('require field.')
+        }
+
         const updatedItem = await Item.findByIdAndUpdate(itemId, {
             ...filteredData
         },{

@@ -5,11 +5,11 @@ const BadRequestException = require('../exception/BadRequest.exception')
 const NotFoundException = require('../exception/NotFound.exception')
 
 const { uploadImage, getImage, deleteImage } = require('../service/itemImage.service.js')
-const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
+const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middleware.js')
 
 const upload = require('../util/upload.util.js')
 
-router.post('/upload/:itemId', verifyAuthAT, upload.single('image'), async (req, res, next) => {
+router.post('/upload/:itemId', authATBuyer, upload.single('image'), async (req, res, next) => {
     try{
         if(!req.file){
             throw new NotFoundException('Please upload image.')
@@ -20,7 +20,7 @@ router.post('/upload/:itemId', verifyAuthAT, upload.single('image'), async (req,
         res.status(201).send({ 
             data:{
                 imageName,
-                message: `upload ${imageName} sucessful.`
+                message: `upload ${req.file.originalname} sucessful.`
             }
         })
     }catch(error){
@@ -48,7 +48,7 @@ router.get('/get/:imageName', async (req, res, next) => {
     }
 })
 
-router.delete('/delete/:imageName', verifyAuthAT, async (req, res, next) => {
+router.delete('/delete/:imageName', authATBuyer, async (req, res, next) => {
     try{
         if(!req.params.imageName){
             throw new BadRequestException('required imageName params.')

@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid')
 const Carrier = require('../model/carrier.model.js')
 
 const NotFoundException = require('../exception/NotFound.exception')
+const InternalExpection = require('../exception/Internal.expection.js')
 const BadRequestException = require('../exception/BadRequest.exception.js')
 
 const minioClient = require('../db/minio.db.js')
@@ -51,7 +52,14 @@ const createCarrier = async (data) => {
 
         return newCarrier
     }catch(error){
-        throw error
+        if(error.name === 'MongoServerError' && error.code === 11000){
+            const existField = Object.keys(error.keyPattern)
+            throw new BadRequestException(`${existField.toString()} are already exists.`)
+        }else if(error.name === 'ValidationError'){
+            throw new BadRequestException(`${error.message.substring(error.message.indexOf(':')+1).trim()}`)
+        }else{
+            throw error
+        }
     }
 }
 
@@ -177,7 +185,7 @@ const getAvatar = async (carrierId) => {
         }
 
         if(!carrier.avatar){
-            throw new BadRequestException(`carrier avatar not found.`)
+            throw new NotFoundException(`carrier avatar not found.`)
         }
 
         const dataStream = await minioClient.getObject(bucket, carrier.avatar)

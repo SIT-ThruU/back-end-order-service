@@ -55,9 +55,11 @@ const createBuyer = async (data)  => {
         if(error.name === 'MongoServerError' && error.code === 11000){
             const existField = Object.keys(error.keyPattern)
             throw new BadRequestException(`${existField.toString()} are already exists.`)
+        }else if(error.name === 'ValidationError'){
+            throw new BadRequestException(`${error.message.substring(error.message.indexOf(':')+1).trim()}`)
+        }else{
+            throw error
         }
-
-        throw error
     }
 }
 
@@ -169,7 +171,7 @@ const getAvatar = async (buyerId) => {
         }
 
         if(!buyer.avatar){
-            throw new BadRequestException(`Buyer avatar not found.`)
+            throw new NotFoundException(`Buyer avatar not found.`)
         }
 
         const dataStream = await minioClient.getObject(bucket, buyer.avatar)

@@ -2,9 +2,9 @@ const express = require('express')
 const router = new express.Router()
 
 const { findAllByOrderId, findByItemId, createItem, updateItem, deleteItem } = require('../service/item.service')
-const { verifyAuthAT } = require('../middleware/buyer.auth.middleware.js')
+const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middleware.js')
 
-router.get('/getall', verifyAuthAT, async (req, res, next) => {
+router.get('/getall', authATBuyer, async (req, res, next) => {
     try{
         const items = await findAllByOrderId(req.body.orderId, req.buyer._id)
 
@@ -18,7 +18,7 @@ router.get('/getall', verifyAuthAT, async (req, res, next) => {
     }
 })
 
-router.get('/get/:itemId', verifyAuthAT, async (req, res, next) => {
+router.get('/get/:itemId', authATBuyer, async (req, res, next) => {
     try{
         const item = await findByItemId(req.params.itemId, req.buyer._id)
 
@@ -32,7 +32,7 @@ router.get('/get/:itemId', verifyAuthAT, async (req, res, next) => {
     }
 })
 
-router.post('/create', verifyAuthAT, async (req, res, next) => {
+router.post('/create', authATBuyer, async (req, res, next) => {
     try{
         const item = await createItem(req.body,req.body.orderId, req.buyer._id)
         res.status(201).send({
@@ -46,7 +46,7 @@ router.post('/create', verifyAuthAT, async (req, res, next) => {
     }
 })
 
-router.put('/update/:itemId', verifyAuthAT, async (req, res, next) =>{
+router.put('/update/:itemId', authATBuyer, async (req, res, next) =>{
     try{
         const updatedItem = await updateItem(req.body, req.params.itemId, req.buyer._id)
 
@@ -61,7 +61,7 @@ router.put('/update/:itemId', verifyAuthAT, async (req, res, next) =>{
     }
 })
 
-router.delete('/delete/:itemId', verifyAuthAT, async (req, res, next) => {
+router.delete('/delete/:itemId', authATBuyer, async (req, res, next) => {
     try{
         const deletedItem = await deleteItem(req.params.itemId, req.buyer._id)
 

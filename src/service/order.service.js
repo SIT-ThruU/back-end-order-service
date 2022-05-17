@@ -62,7 +62,7 @@ const updateOrder = async (data, orderId, buyerId) => {
     try{
         await getOrderById(orderId, buyerId)
 
-        const updateField = ['status', 'latitude', 'longitude']
+        const updateField = ['latitude', 'longitude']
 
         const filteredData = Object.keys(data)
             .filter(key => updateField.includes(key))
@@ -70,7 +70,11 @@ const updateOrder = async (data, orderId, buyerId) => {
             obj[key] = data[key]
             return obj
             },{})
-
+        
+        if(Object.keys(filteredData).length === 0){
+            throw new BadRequestException('require field.')
+        }
+        
         const updatedOrder =  await Order.findOneAndUpdate({_id: orderId},{
             ...filteredData
         },{

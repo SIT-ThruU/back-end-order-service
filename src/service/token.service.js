@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-const Buyer = require('../model/buyer.model.js')
 
 const generateRefreshToken = async (id) => {
     try{

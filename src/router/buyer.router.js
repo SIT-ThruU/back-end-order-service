@@ -120,7 +120,12 @@ router.post('/uploadAvatar', authATBuyer, upload.single('avatar'), async (req, r
     try{
         const avatar = await uploadAvatar(req.file, req.buyer._id)
 
-        res.send({ avatar })
+        res.status(201).send({ 
+            data:{
+                avatar,
+                message: `upload ${req.file.originalname} sucessful.`
+            }
+        })
     }catch(error){
         next(error)
     }

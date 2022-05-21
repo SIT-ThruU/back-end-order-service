@@ -1,0 +1,213 @@
+# Default values for generic-deployment.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/SIT-ThruU/back-end-order-service
+  tag: uat
+  pullPolicy: Always
+imagePullSecrets:
+ - thru-u-ghcr
+
+nameOverride: thru-u-back-end-order-service-uat
+fullnameOverride: thru-u-back-end-order-service-uat
+# Istio version label
+versionLabel: 0.3.0
+
+env:
+  - name: PORT
+    value: 3000
+  - name: MONGODB_URL
+    value: mongodb://mongodb-uat.thru-u-datastore.svc:27017/thruu
+  - name: MINIO_URL
+    value: minio-api.uat.thru-u.in.th
+  - name: MINIO_PORT
+    value: 443
+  - name: MINIO_ACCESS_KEY
+    value: client@thruu1234
+  - name: MINIO_SECRET_KEY
+    value: lengleng0909
+  - name: MINIO_BUCKET_ITEM_IMAGE
+    value: photo
+  - name: JWT_SECRET_RT
+    value: thruuRT_secret
+  - name: JWT_RT_EXPIRES_IN
+    value: 30d
+  - name: JWT_SECRET_AT
+    value: thruuAT_secret
+  - name: JWT_AT_EXPIRES_IN
+    value: 30d
+  - name: MINIO_BUCKET_AVATAR_IMAGE
+    value: avatar
+
+  # - name: SAMPLE_SHARED_CONFIG
+  #   configmap:
+  #     name: shared-configmap
+  #     value: SAMPLE_SHARED_CONFIG
+envFrom: 
+  # configMaps:
+  #   - generic-deployment
+
+configMaps:
+  create: false
+  data: {}
+    # SAMPLE_CONFIG: "sample-config"
+
+secrets:
+  create: false
+  data: {}
+    # SAMPLE_PASSWORD: "sample-secret"
+
+containerPorts:
+  - 3000
+
+# Enable PodSecurityPolicy
+pspEnable: false
+
+resources: {}
+  # requests:
+  #   cpu: 100m
+  #   memory: 50Mi
+  # limits:
+  #   cpu: 2000m
+  #   memory: 200Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Waiting time in seconds for shutting down pod after sent SIGTERM
+terminationGracePeriodSeconds: 30
+
+services:
+  - type: ClusterIP
+    annotation: {}
+    ports:
+      - name: thru-u-back-end-order-service-port
+        protocol: TCP
+        port: 3000
+        targetPort: 3000
+  #       nodePort: 32080
+  #     - name: sample2-service-port
+  #       protocol: TCP
+  #       port: 8080
+  #       targetPort: 8080
+  #       nodePort: 32081
+  # - suffixName: "lb"
+  #   type: LoadBalancer
+  #   annotation: {}
+  #   ports:
+  #     - name: sample1-service-port
+  #       protocol: TCP
+  #       port: 80
+  #       targetPort: 80
+  #     - name: sample2-service-port
+  #       protocol: TCP
+  #       port: 8080
+  #       targetPort: 8080
+
+serviceHeadless:
+  enabled: false
+  # annotation: {}
+  # ports:
+  #   - name: thru-u-back-end-port
+  #     protocol: TCP
+  #     port: 3000
+  #     targetPort: 3000
+  #   - name: sample2-service-port
+  #     protocol: TCP
+  #     port: 8080
+  #     targetPort: 8080
+
+healthCheck:
+  enabled: true
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 3000
+    initialDelaySeconds: 5
+    # timeoutSeconds: 1
+    periodSeconds: 30
+    # successThreshold: 1
+    # failureThreshold: 3
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 3000
+    initialDelaySeconds: 5
+    # timeoutSeconds: 1
+    periodSeconds: 30
+    # successThreshold: 1
+    # failureThreshold: 3
+
+# Pod update strategy
+updateStrategy:
+  # Blue-Green Deployment
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 100%
+    maxUnavailable: 0
+
+# Horizontal Pod Autoscaling
+autoscaling:
+  enabled: false
+  # # Example
+  # minReplicas: 1
+  # maxReplicas: 10
+  # targetCPUUtilizationPercentage: 50
+  # targetMemoryUtilizationPercentage: 50
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+  # # ingressClassName: nginx
+  rules:
+    - host: uat.api.thru-u.in.th
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                port:
+                  number: 3000
+    #       - path: /api
+    #         backend:
+    #           service
+    #             port:
+    #               number: 8080
+    # - host: b.example.com
+    #   http:
+    #     paths:
+    #       - path: /
+    #         backend:
+    #           - servicePort: 80
+  tls:
+   - hosts:
+     - uat.api.thru-u.in.th
+     secretName: thru-u-wildcard-cert
+
+istioIngress:
+  enabled: false
+  # serverPort: 80 # or 443
+  # tls: {}
+    # mode: SIMPLE
+    # credentialName: https-tls
+  # hosts: []
+    # - a.example.com
+  # http:
+  #   - match:
+  #     - uri:
+  #         prefix: /
+  #     rewrite:
+  #       uri: /rewrite
+  #     route:
+  #     - destination:
+  #         port:
+  #           number: 8080

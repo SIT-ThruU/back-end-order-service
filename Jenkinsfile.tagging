@@ -47,7 +47,7 @@ spec:
           script {
             docker.withRegistry('https://ghcr.io', 'thru-u-ghcr') {
               // Pulling UAT Image
-              uatImage = docker.image("ghcr.io/SIT-ThruU/back-end-order-service:uat")
+              uatImage = docker.image("ghcr.io/sit-thruu/back-end-order-service:uat")
               uatImage.pull()
               // Push UAT Image back with build tag
               uatImage.push("build-${BUILD_NUMBER}")

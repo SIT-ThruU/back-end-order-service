@@ -136,7 +136,7 @@ spec:
             // Do docker login authentication
             docker.withRegistry('https://ghcr.io', 'thru-u-ghcr') {
               // Do docker build and docker push
-              docker.build('ghcr.io/SIT-ThruU/back-end-order-service:${ENV_NAME}').push()
+              docker.build('ghcr.io/sit-thruu/back-end-order-service:${ENV_NAME}').push()
             } // End docker.withRegistry
           } // End script
         } // End container
@@ -149,7 +149,7 @@ spec:
         container('jnlp') {
           script {
                 // dend Docker Image to Anchore Analyzer
-                writeFile file: 'anchore_images' , text: "ghcr.io/SIT-ThruU/back-end-order-service:${ENV_NAME}"
+                writeFile file: 'anchore_images' , text: "ghcr.io/sit-thruu/back-end-order-service:${ENV_NAME}"
                 anchore name: 'anchore_images' , bailOnFail: false , engineRetries: '10000'
             } // End script
           } // End container

@@ -27,7 +27,7 @@ const findById = async (id) => {
 
 const createCarrier = async (data) => {
     try{
-        const requireField = ['cid', 'title', 'fname', 'lname', 'email', 'password', 'dob', 'telNumber']
+        const requireField = ['cid', 'title', 'fname', 'lname', 'email', 'password', 'dob', 'telNumber', 'address']
         const hasNull = []
 
         if(!data){
@@ -67,7 +67,7 @@ const updatecarrier = async (data, carrierId) => {
     try{
         const carrier = await findById(carrierId)
 
-        const updateField = ['title', 'fname', 'lname', 'password', 'telNumber']
+        const updateField = ['title', 'fname', 'lname', 'password', 'telNumber', 'dob', 'address']
 
         const filteredData = Object.keys(data)
             .filter(key => updateField.includes(key))

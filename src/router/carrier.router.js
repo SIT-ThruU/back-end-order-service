@@ -7,6 +7,7 @@ const { verifyAuthAT: authATCarrier,
         verifyAuthRT: authRTCarrier } = require('../middleware/carrier.auth.middleware.js')
 
 const upload = require('../util/upload.util.js')
+const BadRequestException = require('../exception/BadRequest.exception.js')
 
 router.get('/profile', authATCarrier, (req, res, next) => {
     try{

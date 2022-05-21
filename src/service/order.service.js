@@ -46,6 +46,10 @@ const createOrder = async (data, buyerId) => {
 
         const {latitude, longitude} = data
 
+        if(!latitude || !longitude){
+            throw new BadRequestException('Require latitude, longitude field.')
+        }
+
         const newOrder = await Order.create({
             latitude,
             longitude,

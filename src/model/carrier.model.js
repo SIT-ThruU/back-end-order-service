@@ -87,6 +87,7 @@ const carrierSchema = new mongoose.Schema({
     },
     rating:{
         type: Number,
+        default: 3,
         max: 5,
         min: 0
     },

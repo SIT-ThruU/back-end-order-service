@@ -84,6 +84,12 @@ const BuyerSchema = new mongoose.Schema({
     },
     avatar:{
         type: String
+    },
+    address:{
+        type: String
+    },
+    workAddress:{
+        type: String
     }
 },{
     versionKey: false

@@ -67,7 +67,7 @@ const updateBuyer = async (data, buyerId) => {
     try{
         const buyer = await findById(buyerId)
 
-        const updateField = ['title', 'fname', 'lname', 'password', 'telNumber']
+        const updateField = ['title', 'fname', 'lname', 'password', 'telNumber', 'dob', 'telNumber', 'address', 'workAddress']
 
         const filteredData = Object.keys(data)
             .filter(key => updateField.includes(key))

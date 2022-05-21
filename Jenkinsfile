@@ -115,7 +115,7 @@ spec:
                     // Start OWASP Dependency Check
                     dependencyCheck(
                         additionalArguments: "--data /home/jenkins/dependency-check-data --out dependency-check-report.xml",
-                        odcInstallation: "Dependency-Check"
+                        odcInstallation: "thru-u-dependency-check"
                     )
                     // Publish report to Jenkins
                     dependencyCheckPublisher(

@@ -18,6 +18,10 @@ const OrderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Buyer'
+    },
+    carrierId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Carrier'
     }
 },{
     versionKey: false,

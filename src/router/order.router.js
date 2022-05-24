@@ -1,8 +1,11 @@
 const express = require('express')
 const router = new express.Router()
 
-const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder } = require('../service/order.service.js')
+const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder, submitOrder, acceptMatching, findAllWatingOrder } = require('../service/order.service.js')
+const { findAllByOrderId  } = require('../service/item.service.js')
 const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middleware.js')
+const { verifyAuthAT: authATCarrier } = require('../middleware/carrier.auth.middleware.js')
+const BadRequestException = require('../exception/BadRequest.exception.js')
 
 router.get('/getall', authATBuyer, async (req, res, next) => {
     try{
@@ -55,6 +58,57 @@ router.put('/edit/:orderId', authATBuyer, async (req, res, next) => {
             data:{
                 order: updatedOrder,
                 message: 'update order successful.'
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.put('/submitOrder', authATBuyer, async (req, res, next) => {
+    try{
+        if(!req.query.orderId){
+            throw new BadRequestException('require orderId field.')
+        }
+        const items = await findAllByOrderId(req.query.orderId, req.buyer._id)
+        
+        if(items.length === 0){
+            throw new BadRequestException('require item in order.')
+        }
+
+        await submitOrder(req.query.orderId, req.buyer._id)
+        
+        res.send({
+            data:{
+                message: 'confirm order successful.'
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.post('/acceptMatching', authATCarrier, async (req, res, next) => {
+    try{
+        if(!req.body.matchOrder){
+            throw new BadRequestException('require matchOrder field.')
+        }
+
+        const data = await acceptMatching(req.carrier._id, req.body.matchOrder)
+
+        res.send(data)
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/getAllWatingOrder', authATCarrier, async (req, res, next) => {
+    try{
+        const orders = await findAllWatingOrder()
+
+        res.send({
+            data: {
+                orders
             }
         })
     }catch(error){

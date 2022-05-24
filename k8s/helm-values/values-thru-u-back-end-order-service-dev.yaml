@@ -20,7 +20,7 @@ env:
   - name: PORT
     value: 3000
   - name: MONGODB_URL
-    value: mongodb://mongodb-dev.thru-u-datastore.svc:27017/thruu
+    value: mongodb://root:thruuadmin1234@mongodb-dev.thru-u-datastore.svc:27017/thruu
   - name: MINIO_URL
     value: minio-api.dev.thru-u.in.th
   - name: MINIO_PORT

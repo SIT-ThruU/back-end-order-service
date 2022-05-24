@@ -92,9 +92,27 @@ const updateOrder = async (data, orderId, buyerId) => {
     }
 }
 
+const getCurrentCart = async (buyerId) => {
+    try{   
+        const order = await Order.findOne({
+            buyerId,
+            status: 'ON_CART'
+        }).populate('items')
+
+        if(!order){
+            return
+        }
+
+        return order
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     getAllOrderByBuyerId,
     getOrderById,
     createOrder,
-    updateOrder
+    updateOrder,
+    getCurrentCart
 }

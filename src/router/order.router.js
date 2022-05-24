@@ -1,7 +1,7 @@
 const express = require('express')
 const router = new express.Router()
 
-const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder } = require('../service/order.service.js')
+const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder, getCurrentCart } = require('../service/order.service.js')
 const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middleware.js')
 
 router.get('/getall', authATBuyer, async (req, res, next) => {
@@ -55,6 +55,20 @@ router.put('/edit/:orderId', authATBuyer, async (req, res, next) => {
             data:{
                 order: updatedOrder,
                 message: 'update order successful.'
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/getCurrentCart', authATBuyer, async (req, res, next) => {
+    try{
+        const order = await getCurrentCart(req.buyer._id)
+
+        res.send({
+            data:{
+                order
             }
         })
     }catch(error){

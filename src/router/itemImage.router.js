@@ -9,18 +9,20 @@ const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middlewa
 
 const upload = require('../util/upload.util.js')
 
-router.post('/upload/:itemId', authATBuyer, upload.single('image'), async (req, res, next) => {
+router.post('/upload/:itemId', authATBuyer, upload.array('image'), async (req, res, next) => {
     try{
-        if(!req.file){
+        if(!req.files){
             throw new NotFoundException('Please upload image.')
         }
 
-        const imageName = await uploadImage(req.file, req.params.itemId, req.buyer._id)
+        const imageNames = await uploadImage(req.files, req.params.itemId, req.buyer._id)
+
+        const imagesOriginalname = req.files.map(file => file.originalname)
 
         res.status(201).send({ 
             data:{
-                imageName,
-                message: `upload ${req.file.originalname} sucessful.`
+                imageNames,
+                message: `upload ${imagesOriginalname.toString()} sucessful.`
             }
         })
     }catch(error){

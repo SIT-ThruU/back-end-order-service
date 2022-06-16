@@ -122,7 +122,7 @@ const submitOrder = async (orderId, buyerId) => {
                 order:{
                     latitude: updatedOrder.latitude,
                     longitude: updatedOrder.longitude,
-                    orderId: updatedOrder._id,
+                    _id: updatedOrder._id,
                     buyerId:{
                     _id:   buyer._id,
                     title: buyer.title,
@@ -130,6 +130,7 @@ const submitOrder = async (orderId, buyerId) => {
                     lname: buyer.lname,
                     telNumber: buyer.telNumber
                     },
+                    id: updatedOrder.id
                 }
             }
         })
@@ -152,9 +153,23 @@ const acceptMatching = async (carrierId, newOrder) => {
 
         const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)
 
-        const response = await axios.post(`${process.env.CHAT_URL}/room/getRoom`,{
+        const response = await axios.post(`${process.env.CHAT_URL}/room/createRoom`,{
             carrierId,
             buyerId: newOrder.buyerId
+        })
+
+        chatSocket.emit('sendMessage', {
+            carrierId,
+            roomId: response.data.data.room._id,
+            messageType: 'ORDER_MODAL',
+            orderModal: {
+                orderId: order._id,
+                status: order.status
+            }
+        },(error)=>{
+            if(error){
+                throw error
+            }
         })
 
         return { 

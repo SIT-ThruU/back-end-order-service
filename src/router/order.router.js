@@ -96,7 +96,9 @@ router.post('/acceptMatching', authATCarrier, async (req, res, next) => {
 
         const data = await acceptMatching(req.carrier._id, req.body.matchOrder)
 
-        res.send(data)
+        res.send({
+            data
+        })
     }catch(error){
         next(error)
     }

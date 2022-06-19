@@ -143,6 +143,6 @@ carrierSchema.statics.findByCredentials = async (email, password) => {
     }
 }
 
-const Carrier = mongoose.model('carrier', carrierSchema)
+const Carrier = mongoose.model('Carrier', carrierSchema)
 
 module.exports = Carrier

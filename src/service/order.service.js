@@ -123,7 +123,8 @@ const submitOrder = async (orderId, buyerId) => {
                     latitude: updatedOrder.latitude,
                     longitude: updatedOrder.longitude,
                     _id: updatedOrder._id,
-                    buyerId:{
+                    buyerId: buyer._id,
+                    buyer:{
                     _id:   buyer._id,
                     title: buyer.title,
                     fname: buyer.fname,
@@ -184,7 +185,7 @@ const acceptMatching = async (carrierId, newOrder) => {
 const findAllWatingOrder = async () => {
     try{
         const orders = await Order.find({status:'WATING_FOR_CARRIER'}).populate({
-            path: 'buyerId',
+            path: 'buyer',
             select: ['title', 'fname', 'lname', 'telNumber']
         }).exec()
 

@@ -34,6 +34,13 @@ OrderSchema.virtual('items', {
     foreignField: 'orderId'
 })
 
+OrderSchema.virtual('buyer', {
+    ref: 'Buyer',
+    localField: 'buyerId',
+    foreignField: '_id',
+    justOne: true
+})
+
 const Order = mongoose.model('Order', OrderSchema)
 
 module.exports = Order

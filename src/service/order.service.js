@@ -164,8 +164,8 @@ const acceptMatching = async (carrierId, newOrder) => {
             roomId: response.data.data.room._id,
             messageType: 'ORDER_MODAL',
             orderModal: {
-                orderId: order._id,
-                status: order.status
+                orderId: updatedOrder._id,
+                status: updatedOrder.status
             }
         },(error)=>{
             if(error){

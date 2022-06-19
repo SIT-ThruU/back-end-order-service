@@ -11,9 +11,9 @@ const { findByItemId } = require('../service/item.service.js')
 
 const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
 
-const uploadImage = async (file, itemId, buyerId) => {
+const uploadImage = async (files, itemId, buyerId) => {
     try{
-        if(!file){
+        if(!files){
             throw new BadRequestException(`require file.`)
         }
 
@@ -23,25 +23,26 @@ const uploadImage = async (file, itemId, buyerId) => {
             throw new NotFoundException(`Item id: ${itemId} not found.`)
         }
 
-        const extArray = file.mimetype.split("/")
-        const extension = extArray[extArray.length - 1]
-        const imageName = `${uuidv4()}.${extension}`
+        const imageNames = []
 
-        if(!item.referencePicture.includes(imageName)){
+        for (let i=0; i< files.length; i++) {
+            const extArray = files[i].mimetype.split("/")
+            const extension = extArray[extArray.length - 1]
+            const imageName = `${uuidv4()}.${extension}`
 
             const metadata = {
-                'Content-type': file.mimetype,
+            'Content-type': files[i].mimetype,
             }
         
-            await minioClient.putObject(bucket, imageName, file.buffer, metadata)
+            await minioClient.putObject(bucket, imageName, files[i].buffer, metadata)
 
             item.referencePicture.push(imageName)
             await item.save()
 
-            return imageName
-        }else{
-            throw new BadRequestException(`${file.originalname} already exist.`)
+            imageNames.push(imageName)
         }
+        
+        return imageNames
     }catch(error){
         throw error
     }

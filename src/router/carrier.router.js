@@ -1,10 +1,14 @@
 const express = require('express')
 const router = new express.Router()
 
-const { createCarrier, updatecarrier, addToken, verifyLogin, deleteToken, uploadAvatar, getAvatar } = require('../service/carrier.service.js')
+const { createCarrier, updatecarrier, addToken, verifyLogin, deleteToken, uploadAvatar, getAvatar, checkOrder } = require('../service/carrier.service.js')
+const { updateOrder, getCarrierOrderById } = require('../service/order.service.js')
 const { generateAccessToken, generateRefreshToken } = require('../service/token.service.js')
 const { verifyAuthAT: authATCarrier,
         verifyAuthRT: authRTCarrier } = require('../middleware/carrier.auth.middleware.js')
+
+const { io } = require('socket.io-client')
+const chatSocket = io(`${process.env.WEB_SOCKET_URL}/chat`)
 
 const upload = require('../util/upload.util.js')
 const BadRequestException = require('../exception/BadRequest.exception.js')
@@ -139,6 +143,65 @@ router.get('/getAvatar', authATCarrier, async (req, res, next) => {
 
         dataStream.on('end', () => {
             return res.end()
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/getOrder/:orderId', authATCarrier, async (req, res, next) => {
+    try{
+        const order = await getCarrierOrderById(req.params.orderId, req.carrier._id)
+
+        res.send({
+            data:{
+                order
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.put('/stepOTW', authATCarrier, async (req, res, next) => {
+    try{
+        const allowStatus = ['IN_PROGRESS_SHOPPING', 'SHOP_CLOSED']
+        const status = req.body.status
+
+        if(!req.body.orderId || !status || !req.body.roomId){
+            throw new BadRequestException('require orderId, status and roomId')
+        }
+        
+        if(!allowStatus.includes(status)){
+            throw new BadRequestException('status should be only IN_PROGRESS_SHOPPING or SHOP_CLOSED.')
+        }
+
+        const order = await checkOrder(req.carrier._id, req.body.orderId)
+
+        if(order.status !== 'IN_PROGRESS'){
+            throw new BadRequestException('cannot process because order status are not IN_PROGRESS.')
+        }
+
+        const updatedOrder = await updateOrder({status}, order._id, order.buyerId)
+
+        chatSocket.emit('sendMessage', {
+            carrierId: req.carrier._id,
+            roomId: req.body.roomId,
+            messageType: 'ORDER_MODAL',
+            orderModal: {
+                orderId: updatedOrder._id,
+                status: updatedOrder.status
+            }
+        },(error) => {
+            if(error){
+                throw error
+            }
+        })
+
+        res.status(200).send({ 
+            data:{
+                message:'change status successful.'
+            }
         })
     }catch(error){
         next(error)

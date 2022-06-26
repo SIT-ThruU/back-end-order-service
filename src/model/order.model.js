@@ -3,7 +3,7 @@ const mongoose = require('../db/mongoose.db.js')
 const OrderSchema = new mongoose.Schema({
     status:{
         type: String,
-        enum: ['ON_CART', 'WATING_FOR_CARRIER', 'IN_PROGRESS', 'WATING_FOR_PAYMENT', 'IN_TRANSPORT', 'SUCCESSFUL', 'FAIL'],
+        enum: ['ON_CART', 'WATING_FOR_CARRIER', 'IN_PROGRESS', 'IN_PROGRESS_SHOPPING', 'WATING_FOR_PAYMENT', 'IN_TRANSPORT', 'SUCCESSFUL', 'FAIL', 'SHOP_CLOSED'],
         default: 'ON_CART'
     },
     latitude:{

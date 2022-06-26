@@ -31,7 +31,13 @@ const getOrderById = async (orderId, buyerId) => {
         const order = await Order.findOne({
             _id: orderId,
             buyerId
-        }).populate('items')
+        }).populate({
+            path: 'items',
+            populate: {
+                path: 'itemDetail',
+                model: 'ItemDetail'
+            }
+        })
 
         if(!order){
             throw new NotFoundException(`Order id: ${orderId} not found.`)
@@ -195,6 +201,29 @@ const findAllWatingOrder = async () => {
     }
 }
 
+const getCarrierOrderById = async (orderId, carrierId) => {
+    try{
+        const order = await Order.findOne({
+            _id: orderId,
+            carrierId: carrierId
+        }).populate({
+            path: 'items',
+            populate: {
+                path: 'itemDetail',
+                model: 'ItemDetail'
+            }
+        })
+
+        if(!order){
+            throw new NotFoundException(`Order id: ${orderId} not found.`)
+        }
+
+        return order
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     getAllOrderByBuyerId,
     getOrderById,
@@ -202,5 +231,6 @@ module.exports = {
     updateOrder,
     submitOrder,
     acceptMatching,
-    findAllWatingOrder
+    findAllWatingOrder,
+    getCarrierOrderById
 }

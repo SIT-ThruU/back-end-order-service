@@ -6,6 +6,8 @@ const ItemRouter = require('./router/item.router.js')
 const ItemImageRouter = require('./router/itemImage.router.js')
 const BuyerRouter = require('./router/buyer.router.js')
 const CarrierRouter = require('./router/carrier.router.js')
+const ItemDetailRouter = require('./router/ItemDetail.router.js')
+const ItemDetailImageRouter = require('./router/itemDetailImage.router.js')
 
 const app = express()
 
@@ -23,6 +25,9 @@ app.use('/item', ItemRouter)
 app.use('/item/image', ItemImageRouter)
 app.use('/buyer', BuyerRouter)
 app.use('/carrier', CarrierRouter)
+app.use('/itemDetail', ItemDetailRouter)
+app.use('/itemDetail/image', ItemDetailImageRouter)
+
 
 app.get('/health', (req, res) => {
     res.send({

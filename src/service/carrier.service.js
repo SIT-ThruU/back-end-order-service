@@ -2,6 +2,8 @@ const sharp = require('sharp')
 const { v4: uuidv4 } = require('uuid')
 
 const Carrier = require('../model/carrier.model.js')
+const Order = require('../model/order.model.js')
+const ItemDetail = require('../model/itemDetail.model.js')
 
 const NotFoundException = require('../exception/NotFound.exception')
 const InternalExpection = require('../exception/Internal.expection.js')
@@ -200,6 +202,49 @@ const getAvatar = async (carrierId) => {
     }
 }
 
+const checkOrder = async (carrierId, orderId) => {
+    try{
+        const order = await Order.findOne({
+            _id: orderId,
+            carrierId
+        })
+
+        if(!order){
+            throw new BadRequestException('Order not found on your carrierId.')
+        }
+
+        return order
+    }catch(error){
+        throw error
+    }
+}
+
+const checkItemDetail = async (carrierId, itemDetailId) => {
+    try{
+
+        const itemDetail = await ItemDetail.findById(itemDetailId).select('itemId').populate({
+            path: 'itemId',
+            select:['orderId'],
+            populate:{
+                path: 'orderId',
+                select: ['_id'],
+                model: 'Order',
+                match: { carrierId }
+            }
+        }).exec()
+
+        if(!itemDetail){
+            throw new NotFoundException(`itemDetail not found.`)
+        }else if(itemDetail.itemId.orderId === null){
+            throw new BadRequestException('carrierId and itemDetailId not match.')
+        }
+
+        return itemDetail
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     findById,
     createCarrier,
@@ -208,5 +253,7 @@ module.exports = {
     addToken,
     deleteToken,
     uploadAvatar,
-    getAvatar
+    getAvatar,
+    checkOrder,
+    checkItemDetail
 }

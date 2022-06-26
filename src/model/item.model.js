@@ -4,6 +4,8 @@ const minioClient = require('../db/minio.db.js')
 
 const bucket = process.env.MINIO_BUCKET_ITEM_IMAGE
 
+require('./itemDetail.model.js')
+
 const ItemSchema = new mongoose.Schema({
     name:{
         type: String,
@@ -33,7 +35,20 @@ const ItemSchema = new mongoose.Schema({
         ref: 'Order'
     }
 },{
-    versionKey: false
+    versionKey: false,
+    toJSON:{
+        virtuals: true
+    },
+    toObject:{
+        virtuals: true
+    }
+})
+
+ItemSchema.virtual('itemDetail', {
+    ref: 'ItemDetail',
+    localField: '_id',
+    foreignField: 'itemId',
+    justOne: true
 })
 
 ItemSchema.pre('remove', async function (next){

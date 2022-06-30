@@ -3,6 +3,7 @@ const router = new express.Router()
 
 const { createCarrier, updatecarrier, addToken, verifyLogin, deleteToken, uploadAvatar, getAvatar, checkOrder } = require('../service/carrier.service.js')
 const { updateOrder, getCarrierOrderById } = require('../service/order.service.js')
+const { findAllByOrderId } = require('../service/item.service.js')
 const { generateAccessToken, generateRefreshToken } = require('../service/token.service.js')
 const { verifyAuthAT: authATCarrier,
         verifyAuthRT: authRTCarrier } = require('../middleware/carrier.auth.middleware.js')
@@ -201,6 +202,20 @@ router.put('/stepOTW', authATCarrier, async (req, res, next) => {
         res.status(200).send({ 
             data:{
                 message:'change status successful.'
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/previewItems', authATCarrier, async (req, res, next) => {
+    try{
+        const items = await findAllByOrderId(req.body.orderId, req.body.buyerId)
+
+        res.send({
+            data:{
+                items
             }
         })
     }catch(error){

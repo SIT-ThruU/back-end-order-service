@@ -8,10 +8,17 @@ const { getOrderById } = require('../service/order.service')
 
 const findAllByOrderId = async (orderId, buyerId) => {
     try{
+        if(!orderId && !buyerId){
+            throw new BadRequestException('require orderId and buyerId.')
+        }
+
         const order = await getOrderById(orderId, buyerId)
 
         const items = await Item.find({
             orderId: order._id
+        }).populate({
+            path: 'itemDetail',
+            model: 'ItemDetail'
         })
 
         return items
@@ -22,7 +29,10 @@ const findAllByOrderId = async (orderId, buyerId) => {
 
 const findByItemId = async (itemId, buyerId) => {
     try{
-        const item = await Item.findById(itemId)
+        const item = await Item.findById(itemId).populate({
+            path: 'itemDetail',
+            model: 'ItemDetail'
+        })
 
         if(!item){
             throw new NotFoundException(`Item id: ${itemId} not found.`)

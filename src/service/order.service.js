@@ -156,6 +156,8 @@ const acceptMatching = async (carrierId, newOrder) => {
 
         if(order.carrierId){
             throw new InternalExpection('This order has matched already')
+        }else if(order.status !== 'WATING_FOR_CARRIER'){
+            throw new BadRequestException('Order not allowed to accept match order.')
         }
 
         const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)

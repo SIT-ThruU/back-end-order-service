@@ -37,7 +37,9 @@ const getOrderById = async (orderId, buyerId) => {
                 path: 'itemDetail',
                 model: 'ItemDetail'
             }
-        })
+        }).populate({
+            path: 'payments'
+        }).exec()
 
         if(!order){
             throw new NotFoundException(`Order id: ${orderId} not found.`)

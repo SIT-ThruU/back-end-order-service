@@ -56,18 +56,4 @@ router.post('/webhook', express.raw({type: 'application/json'}), async (req, res
     }
 })
 
-router.get('/test', async (req, res) => {
-  try {
-
-    const paymentIntent = await stripe.paymentIntents.confirm(
-      'pi_3LIDDhB5lWlvs5F01BmLZKdQ',
-      {payment_method: 'pm_card_visa'}
-    );
-
-    res.send({status: 'work'})
-  } catch (error) {
-    res.send({status: 'not work'})
-  }
-})
-
 module.exports = router

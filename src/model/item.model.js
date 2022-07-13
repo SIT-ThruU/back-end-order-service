@@ -51,6 +51,13 @@ ItemSchema.virtual('itemDetail', {
     justOne: true
 })
 
+ItemSchema.virtual('order', {
+    ref: 'Order',
+    localField: 'orderId',
+    foreignField: '_id',
+    justOne: true
+})
+
 ItemSchema.pre('remove', async function (next){
     try{
         const item = this

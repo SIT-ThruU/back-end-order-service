@@ -32,6 +32,8 @@ const findByItemId = async (itemId, buyerId) => {
         const item = await Item.findById(itemId).populate({
             path: 'itemDetail',
             model: 'ItemDetail'
+        }).populate({
+            path: 'order'
         })
 
         if(!item){
@@ -73,6 +75,10 @@ const createItem = async (data, orderId, buyerId) => {
 
         const order = await getOrderById(orderId, buyerId)
 
+        if(order.status !== 'ON_CART'){
+            throw new BadRequestException(`Item not allowed to create item.`)
+        }
+
         const item = await Item.create({
             ...data,
             orderId: order._id
@@ -86,7 +92,11 @@ const createItem = async (data, orderId, buyerId) => {
 
 const updateItem = async (data, itemId, buyerId) => {
     try{
-        await findByItemId(itemId, buyerId)
+        const item = await findByItemId(itemId, buyerId)
+
+        if(item.order.status !== 'ON_CART'){
+            throw new BadRequestException(`Item not allowed to update item.`)
+        }
 
         const updateField = ['name', 'type', 'description', 'estimatedPrice', 'quantity']
 
@@ -117,6 +127,10 @@ const updateItem = async (data, itemId, buyerId) => {
 const deleteItem = async (itemId, buyerId) => {
     try{
         const deletedItem = await findByItemId(itemId, buyerId)
+
+        if(deletedItem.order.status !== 'ON_CART'){
+            throw new BadRequestException(`Item not allowed to delete item.`)
+        }
 
         await deletedItem.remove()
 

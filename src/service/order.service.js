@@ -8,7 +8,6 @@ const { findById } = require('../service/buyer.service.js')
 
 const { io } = require('socket.io-client')
 const orderSocket = io(`${process.env.WEB_SOCKET_URL}/order`)
-const carrierSocket = io(`${process.env.WEB_SOCKET_URL}/carrier`)
 const chatSocket = io(`${process.env.WEB_SOCKET_URL}/chat`)
 
 const axios = require('axios').default

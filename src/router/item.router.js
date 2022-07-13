@@ -34,7 +34,7 @@ router.get('/get/:itemId', authATBuyer, async (req, res, next) => {
 
 router.post('/create', authATBuyer, async (req, res, next) => {
     try{
-        const item = await createItem(req.body,req.body.orderId, req.buyer._id)
+        const item = await createItem(req.body, req.body.orderId, req.buyer._id)
         res.status(201).send({
             data:{
                 item,

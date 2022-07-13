@@ -69,7 +69,11 @@ const createItemDetail = async (data) => {
 
 const updateItemDetail = async (data, itemDetailId, carrierId) => {
     try{
-        await checkItemDetail(carrierId, itemDetailId)
+        const itemDetail = await checkItemDetail(carrierId, itemDetailId)
+
+        if(itemDetail.itemId.orderId.status !== 'IN_PROGRESS_SHOPPING'){
+            throw new BadRequestException(`item are not allow to continue shopping.`)
+        }
         
         const updateField = ['status', 'actualPrice', 'actualQuantity']
 

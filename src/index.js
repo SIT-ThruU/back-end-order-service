@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 })
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: process.env.ORIGIN_URL ? process.env.ORIGIN_URL.split(",") : null,
     methods: ['GET','HEAD','PUT','PATCH','POST','DELETE']
 }))
 

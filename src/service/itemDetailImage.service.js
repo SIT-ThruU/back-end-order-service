@@ -7,13 +7,20 @@ const NotFoundException = require('../exception/NotFound.exception.js')
 const ItemDetail = require('../model/itemDetail.model.js')
 
 const { findByItemDetailId } = require('../service/ItemDetail.service.js')
+const { checkItemDetail } = require('./carrier.service.js')
 
 const bucket = process.env.MINIO_BUCKET_ITEM_DETAIL_IMAGE
 
-const uploadImage = async (files, itemDetailId) => {
+const uploadImage = async (files, itemDetailId, carrierId) => {
     try{
         if(!files){
             throw new BadRequestException(`require file.`)
+        }
+
+        const hasItemDetail = await checkItemDetail(carrierId, itemDetailId)
+
+        if(hasItemDetail.itemId.orderId.status !== 'IN_PROGRESS_SHOPPING'){
+            throw new BadRequestException(`itemDetail are not allow to upload image.`)
         }
 
         const itemDetail = await findByItemDetailId(itemDetailId)
@@ -29,7 +36,7 @@ const uploadImage = async (files, itemDetailId) => {
             'Content-type': files[i].mimetype,
             }
         
-            await minioClient.putObject(bucket, imageName, files[i].buffer, metadata)
+            minioClient.putObject(bucket, imageName, files[i].buffer, metadata)
 
             itemDetail.referencePicture.push(imageName)
             await itemDetail.save()
@@ -45,7 +52,7 @@ const uploadImage = async (files, itemDetailId) => {
 
 const getImage = async (imageName) => {
     try{
-        const dataStream = await minioClient.getObject(bucket, imageName)
+        const dataStream = minioClient.getObject(bucket, imageName)
 
         return dataStream
     }catch(error){
@@ -66,7 +73,7 @@ const deleteImage = async (imageName, carrierId) => {
             select:['orderId'],
             populate:{
                 path: 'orderId',
-                select: ['_id'],
+                select: ['_id', 'status'],
                 model: 'Order',
                 match: { carrierId }
             }
@@ -76,13 +83,15 @@ const deleteImage = async (imageName, carrierId) => {
             throw new BadRequestException(`Item contain with ${imageName} are not found.`)
         }else if(itemDetail.itemId.orderId === null){
             throw new BadRequestException('carrierId and itemDetailId not match.')
+        }else if(itemDetail.itemId.orderId.status !== 'IN_PROGRESS_SHOPPING'){
+            throw new BadRequestException(`itemDetail are not allow to delete image.`)
         }
 
         itemDetail.referencePicture = itemDetail.referencePicture.filter(key => key !== imageName)
 
         await itemDetail.save()
 
-        await minioClient.removeObject(bucket, imageName)
+        minioClient.removeObject(bucket, imageName)
 
         return imageName
     }catch(error){

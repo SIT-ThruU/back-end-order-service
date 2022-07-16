@@ -37,7 +37,7 @@ const createItemDetail = async (data) => {
         if(!item){
             throw new BadRequestException(`item not found.`)
         }else if(item.orderId.status !== 'IN_PROGRESS_SHOPPING'){
-            throw new BadRequestException(`item are not allow to continue shopping.`)
+            throw new BadRequestException(`itemDetail are not allow to create.`)
         }else if(item.itemDetail){
             throw new BadRequestException(`itemDetail already existed.`)
         }
@@ -72,7 +72,7 @@ const updateItemDetail = async (data, itemDetailId, carrierId) => {
         const itemDetail = await checkItemDetail(carrierId, itemDetailId)
 
         if(itemDetail.itemId.orderId.status !== 'IN_PROGRESS_SHOPPING'){
-            throw new BadRequestException(`item are not allow to continue shopping.`)
+            throw new BadRequestException(`itemDetail are not allow to update.`)
         }
         
         const updateField = ['status', 'actualPrice', 'actualQuantity']

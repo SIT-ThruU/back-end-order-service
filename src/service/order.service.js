@@ -160,13 +160,13 @@ const acceptMatching = async (carrierId, newOrder) => {
         }else if(order.status !== 'WATING_FOR_CARRIER'){
             throw new BadRequestException('Order not allowed to accept match order.')
         }
-
-        const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)
-
+        
         const response = await axios.post(`${process.env.CHAT_URL}/room/createRoom`,{
             carrierId,
             buyerId: newOrder.buyerId
         })
+
+        const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)
 
         chatSocket.emit('sendMessage', {
             carrierId,
@@ -227,6 +227,23 @@ const getCarrierOrderById = async (orderId, carrierId) => {
     }
 }
 
+const getCurrentCart = async (buyerId) => {
+    try{   
+        const order = await Order.findOne({
+            buyerId,
+            status: 'ON_CART'
+        }).populate('items')
+
+        if(!order){
+            return
+        }
+
+        return order
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     getAllOrderByBuyerId,
     getOrderById,
@@ -235,5 +252,6 @@ module.exports = {
     submitOrder,
     acceptMatching,
     findAllWatingOrder,
-    getCarrierOrderById
+    getCarrierOrderById,
+    getCurrentCart
 }

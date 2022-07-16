@@ -21,6 +21,8 @@ const uploadImage = async (files, itemId, buyerId) => {
 
         if(!item){
             throw new NotFoundException(`Item id: ${itemId} not found.`)
+        }else if(item.order.status !== 'ON_CART'){
+            throw new BadRequestException(`item not allowed to upload image.`)
         }
 
         const imageNames = []
@@ -34,7 +36,7 @@ const uploadImage = async (files, itemId, buyerId) => {
             'Content-type': files[i].mimetype,
             }
         
-            await minioClient.putObject(bucket, imageName, files[i].buffer, metadata)
+            minioClient.putObject(bucket, imageName, files[i].buffer, metadata)
 
             item.referencePicture.push(imageName)
             await item.save()
@@ -50,7 +52,7 @@ const uploadImage = async (files, itemId, buyerId) => {
 
 const getImage = async (imageName) => {
     try{
-        const dataStream = await minioClient.getObject(bucket, imageName)
+        const dataStream = minioClient.getObject(bucket, imageName)
 
         return dataStream
     }catch(error){
@@ -72,13 +74,17 @@ const deleteImage = async (imageName, buyerId) => {
             throw new BadRequestException(`Item contain with ${imageName} are not found.`)
         }
 
-        await findByItemId(item._id, buyerId)
+        const checkItem = await findByItemId(item._id, buyerId)
+
+        if(checkItem.order.status !== 'ON_CART'){
+            throw new BadRequestException(`item not allowed to delete image.`)
+        }
 
         item.referencePicture = item.referencePicture.filter(key => key !== imageName)
 
         await item.save()
 
-        await minioClient.removeObject(bucket, imageName)
+        minioClient.removeObject(bucket, imageName)
 
         return imageName
     }catch(error){

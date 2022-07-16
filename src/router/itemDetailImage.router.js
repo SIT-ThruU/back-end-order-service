@@ -2,7 +2,6 @@ const express = require('express')
 const router = new express.Router()
 
 const { uploadImage, getImage, deleteImage } = require('../service/itemDetailImage.service.js')
-const { checkItemDetail } = require('../service/carrier.service.js')
 const { verifyAuthAT: authATCarrier } = require('../middleware/carrier.auth.middleware.js')
 
 const BadRequestException = require('../exception/BadRequest.exception.js')
@@ -19,10 +18,8 @@ router.post('/upload/:itemDetailId', authATCarrier, upload.array('image'), async
         if(!req.files){
             throw new NotFoundException('Please upload image.')
         }
-        
-        await checkItemDetail(req.carrier._id, req.params.itemDetailId)
 
-        const imageNames = await uploadImage(req.files, req.params.itemDetailId)
+        const imageNames = await uploadImage(req.files, req.params.itemDetailId, req.carrier._id)
 
         const imagesOriginalname = req.files.map(file => file.originalname)
 

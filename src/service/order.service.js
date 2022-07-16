@@ -160,13 +160,13 @@ const acceptMatching = async (carrierId, newOrder) => {
         }else if(order.status !== 'WATING_FOR_CARRIER'){
             throw new BadRequestException('Order not allowed to accept match order.')
         }
-
-        const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)
-
+        
         const response = await axios.post(`${process.env.CHAT_URL}/room/createRoom`,{
             carrierId,
             buyerId: newOrder.buyerId
         })
+
+        const updatedOrder =  await updateOrder({status:'IN_PROGRESS', carrierId}, newOrder.orderId, newOrder.buyerId)
 
         chatSocket.emit('sendMessage', {
             carrierId,

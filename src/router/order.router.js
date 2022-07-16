@@ -1,7 +1,7 @@
 const express = require('express')
 const router = new express.Router()
 
-const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder, submitOrder, acceptMatching, findAllWatingOrder } = require('../service/order.service.js')
+const { getAllOrderByBuyerId, getOrderById, createOrder, updateOrder, submitOrder, acceptMatching, findAllWatingOrder, getCurrentCart } = require('../service/order.service.js')
 const { findAllByOrderId  } = require('../service/item.service.js')
 const { verifyAuthAT: authATBuyer } = require('../middleware/buyer.auth.middleware.js')
 const { verifyAuthAT: authATCarrier } = require('../middleware/carrier.auth.middleware.js')
@@ -111,6 +111,20 @@ router.get('/getAllWatingOrder', authATCarrier, async (req, res, next) => {
         res.send({
             data: {
                 orders
+            }
+        })
+    }catch(error){
+        next(error)
+    }
+})
+
+router.get('/getCurrentCart', authATBuyer, async (req, res, next) => {
+    try{
+        const order = await getCurrentCart(req.buyer._id)
+
+        res.send({
+            data:{
+                order
             }
         })
     }catch(error){

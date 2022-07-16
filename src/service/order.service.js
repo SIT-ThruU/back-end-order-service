@@ -227,6 +227,23 @@ const getCarrierOrderById = async (orderId, carrierId) => {
     }
 }
 
+const getCurrentCart = async (buyerId) => {
+    try{   
+        const order = await Order.findOne({
+            buyerId,
+            status: 'ON_CART'
+        }).populate('items')
+
+        if(!order){
+            return
+        }
+
+        return order
+    }catch(error){
+        throw error
+    }
+}
+
 module.exports = {
     getAllOrderByBuyerId,
     getOrderById,
@@ -235,5 +252,6 @@ module.exports = {
     submitOrder,
     acceptMatching,
     findAllWatingOrder,
-    getCarrierOrderById
+    getCarrierOrderById,
+    getCurrentCart
 }

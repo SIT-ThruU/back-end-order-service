@@ -235,7 +235,7 @@ const getCurrentCart = async (buyerId) => {
         }).populate('items')
 
         if(!order){
-            return
+            throw new NotFoundException(`Order with status ON_CART not found.`)
         }
 
         return order

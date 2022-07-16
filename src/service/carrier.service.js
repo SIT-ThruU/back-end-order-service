@@ -227,7 +227,7 @@ const checkItemDetail = async (carrierId, itemDetailId) => {
             select:['orderId'],
             populate:{
                 path: 'orderId',
-                select: ['_id'],
+                select: ['_id', 'status'],
                 model: 'Order',
                 match: { carrierId }
             }

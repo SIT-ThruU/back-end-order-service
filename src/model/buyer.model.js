@@ -57,9 +57,9 @@ const BuyerSchema = new mongoose.Schema({
         type: Date,
         required: true,
         validate(value){
-            const today = new Date()
-            const age = today.getFullYear() - value.getFullYear()
+            let age = today.getFullYear() - value.getFullYear()
             const m = today.getMonth() - value.getMonth()
+            const today = new Date()
 
             if (m < 0 || (m === 0 && today.getDate() < value.getDate())) {
                 age--
